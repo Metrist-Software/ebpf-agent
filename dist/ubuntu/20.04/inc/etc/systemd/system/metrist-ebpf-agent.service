@@ -1,0 +1,9 @@
+[Unit]
+Description=Metrist.io Orchestrator eBPF plugin
+
+[Service]
+ExecStart=/usr/bin/metrist-ebpf-agent
+EnvironmentFile=-/etc/default/metrist-ebpf-agent
+
+[Install]
+WantedBy=multi-user.target

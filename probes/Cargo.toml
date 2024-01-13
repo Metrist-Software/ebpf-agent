@@ -1,0 +1,20 @@
+[package]
+name = "probes"
+version = "0.1.0"
+edition = '2018'
+
+[dependencies]
+cty = "0.2"
+redbpf-macros = { git = "https://github.com/redsift/redbpf" }
+redbpf-probes = { git = "https://github.com/redsift/redbpf" , features = ["probes"]}
+
+[build-dependencies]
+cargo-bpf = { version = "2.3.0", default-features = false }
+
+[features]
+default = []
+probes = []
+
+[[bin]]
+name = "tls_mon"
+path = "src/tls_mon/main.rs"

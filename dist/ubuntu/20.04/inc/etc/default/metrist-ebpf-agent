@@ -1,0 +1,9 @@
+# Environment variables for Metrist Orchestrator.
+#
+# This file serves as documentation only, the official way to
+# override/change these is to edit with `systemctl edit metrist-ebpf-agent`
+#
+
+# METRIST_ORCHESTRATOR_ENDPOINT points at where Orchestrator
+# runs, by default locally on its default port.
+METRIST_ORCHESTRATOR_ENDPOINT=127.0.0.1:51712

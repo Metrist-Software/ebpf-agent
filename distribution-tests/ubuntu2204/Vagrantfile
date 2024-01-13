@@ -1,0 +1,50 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu2204"
+  # Libvirt is preferred given issues around VirtualBox, Oracle licensing, and
+  # commercial use we need to sort out first.
+  config.vm.provider "libvirt" do |vm|
+    vm.memory = "8192"
+    vm.cpus = 8
+    vm.memorybacking :access, :mode => "shared"
+  end
+  config.vm.synced_folder "../../", "/vagrant", type: "virtiofs"
+
+  config.vm.provision "shell", inline: <<-SHELL
+    DEBIAN_FRONTEND=noninteractive
+
+    # Basic stuff
+    apt-get update
+    apt-get install -y build-essential curl sudo zstd git curl unzip wget pkg-config ripgrep entr
+
+    # Elixir/Erlang
+    wget https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc; apt-key add erlang_solutions.asc
+    wget https://packages.erlang-solutions.com/erlang/debian/pool/esl-erlang_25.0.3-1~ubuntu~jammy_amd64.deb
+    wget https://packages.erlang-solutions.com/erlang/debian/pool/elixir_1.13.4-1~ubuntu~focal_all.deb
+	apt install -y ./*.deb
+
+    # LLVM.
+    sudo apt-get -y install zlib1g-dev \
+        llvm-13 llvm-13-dev libclang-13-dev linux-headers-$(uname -r) \
+        libelf-dev gcc-multilib
+
+    # Rust. We install it twice, once for root, once for vagrant. The toolchain
+    # is not meant for system-wide installs and we may need to run our stuff as root.
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs >/tmp/install.sh
+    chmod 755 /tmp/install.sh
+    /tmp/install.sh -y
+    rustup default 1.56
+    sudo -u vagrant /tmp/install.sh -y
+    # (-i for login shells from here so we get the env vars for Cargo etc.)
+    sudo -iu vagrant rustup default 1.56
+    sudo -iu vagrant cargo install cargo-bpf --git https://github.com/redsift/redbpf
+
+    # Quality-of-life tweaks to login shells
+    cat >>/home/vagrant/.profile <<EOF
+ulimit -n 1048576
+cd /vagrant
+EOF
+  SHELL
+end
